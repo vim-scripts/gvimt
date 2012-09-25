@@ -1,17 +1,13 @@
 @echo off
 
-REM Script for Windows to open new files in gvim in new tabs,
-REM splits or vertical splits
-REM Starts gvim if not running already
-REM Call from SendTo menu or from Context menu entries 
-REM Needs grep and awk in the path
-REM Needs tasklist command (so XP, not Windows 2000)
-REM Creates gvimt.tmp while it is running, if it crashes
-REM for some reason, delete this file
+REM Script for Windows to open new files in gvim in new tabs, splits or vertical splits
+REM See gvimt_README.txt for details
+REM Creates gvimt.tmp while it is running, if it crashes for some reason, delete this file
 
 REM Geoff Wood (geoffrey.wood@thomsonreuters.com)
 
 REM gw 13/9/12 created
+REM gw 17/9/12 awk script brings vim to the foreground
 
 setlocal ENABLEDELAYEDEXPANSION
 

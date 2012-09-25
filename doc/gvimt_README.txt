@@ -1,6 +1,7 @@
 gvimt.bat
-Written by Geoff Wood (geoffrey.wood@thomsonreuters.com)
+Written by Geoff Wood (geoffrey.wood at_symbol thomsonreuters.com)
 gw 13/9/12 - created
+gw 25/9/12 - updated to raise Vim to foreground
 
 gvimt.bat is a script for Windows to open new files in gvim in new tabs, splits or vertical splits.  It starts gvim if it is not running already.
 
@@ -14,7 +15,7 @@ It creates gvimt.tmp while it is running, if it crashes or goes wrong for some r
 
 Install instructions:
 =====================
-Create directory C:\Batch Files\ and extract the package there. (If you want another directory, change "set batch_path=" at the start of gvimt.bat.)
+Create directory C:\Batch Files\ and extract the package there. (If you want another directory, change "set batch_path=" at the start of gvimt.bat, and modify gvim.reg accordingly.)
 
 If you do not have the tasklist command (e.g. using Windows 2000), edit the batch file and change "set already_ran" to "=true" at the start of gvimt.bat.
 
