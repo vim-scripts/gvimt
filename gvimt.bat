@@ -8,8 +8,14 @@ REM Geoff Wood (geoffrey.wood@thomsonreuters.com)
 
 REM gw 13/9/12 created
 REM gw 17/9/12 awk script brings vim to the foreground
+REM gw 25/9/12 uses findstr instead of grep, and direct call instead of via awk, and optional vim path added
 
 setlocal ENABLEDELAYEDEXPANSION
+
+REM If gvim.exe is not in your path you can add the path here,
+REM make sure it ends in a \ character and is quoted if necessary
+REM e.g. set vim_path="c:\program files\vim\vim73\"
+set vim_path=
 
 set batch_path="c:\batch files"
 set already_ran=false
@@ -50,17 +56,18 @@ REM If another instance ran, it made sure
 REM gvim was running
 REM Otherwise do it now
 if %already_ran%==false (
-    tasklist | grep -q gvim.exe
+    tasklist | findstr gvim.exe > nul
     if not !errorlevel!==0 (
-        start gvim.exe %1
+        start %vim_path%gvim.exe %1
         shift
     )
 )
 
 :next_file
 if %1_==_ goto end
-REM run with awk script to avoid issues with \ quoting
-awk -f %batch_path%\gvimt.awk %task% %1
+if /i %task% EQU t start %vim_path%gvim.exe --remote-send ":tablast | tabe %~1<CR>:call foreground()<CR>"
+if /i %task% EQU v start %vim_path%gvim.exe --remote-send ":split %~1<CR>:call foreground()<CR>"
+if /i %task% EQU s start %vim_path%gvim.exe --remote-send ":split %~1<CR>:call foreground()<CR>"
 shift
 goto next_file
 

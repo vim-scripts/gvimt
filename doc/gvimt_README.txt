@@ -1,13 +1,11 @@
 gvimt.bat
 Written by Geoff Wood (geoffrey.wood at_symbol thomsonreuters.com)
 gw 13/9/12 - created
-gw 25/9/12 - updated to raise Vim to foreground
+gw 25/9/12 - updated to raise Vim to foreground, removes awk and grep dependency, adds path option to specify vim location
 
 gvimt.bat is a script for Windows to open new files in gvim in new tabs, splits or vertical splits.  It starts gvim if it is not running already.
 
 Call it from SendTo menu, from Context menu entries or from the command line.
-
-It needs grep and awk in the path (tested with gnu versions).  Also gvim.exe.
 
 It uses the tasklist command (which exists from Windows XP, but not in Windows 2000) when checking if gvim is already running.  On Windows 2000 you'll need to have an instance of gvim running already.
 
@@ -18,6 +16,10 @@ Install instructions:
 Create directory C:\Batch Files\ and extract the package there. (If you want another directory, change "set batch_path=" at the start of gvimt.bat, and modify gvim.reg accordingly.)
 
 If you do not have the tasklist command (e.g. using Windows 2000), edit the batch file and change "set already_ran" to "=true" at the start of gvimt.bat.
+
+If gvim.exe is not in your path, edit gvimt.bat and change "set vim_path=" at the start.  Paths should end with \ and be quoted, e.g. 
+
+    set vim_path="c:\program files\vim\vim73\"
 
 Optionally run the gvimt.reg file to create Context Menu entries.
 
@@ -39,9 +41,3 @@ There are some problems doing this with many files from the Windows context menu
 - There is no --remote-split parameter so a different approach is needed for opening files in a new split window.  --remote-send can be used to send an arbitary command for this, but unlike --remote-tab it will not open a new instance of gvim if one doesn't already exist.
 - If you select multiple files and use the Windows context menu, each file gets its own invocation of the command.  gvim does not handle several simultaneous --remote-tab commands well.
 - The SendTo menu does pass all the selected files to one command, but it is an extra click on the right menu to get there, so it is nice to use the Context menu.
-
-Why use awk, tasklist and grep?
-===============================
-Calling vim directly from a batch file has problems with backslashes in the target file path vanishing.  The simplest approach is just to use something else to call gvim that doesn't mangle the path, I use awk for this sort of thing.
-
-grepping the tasklist is an easy way to see if gvim is already running.
