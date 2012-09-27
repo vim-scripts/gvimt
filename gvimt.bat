@@ -9,6 +9,8 @@ REM Geoff Wood (geoffrey.wood@thomsonreuters.com)
 REM gw 13/9/12 created
 REM gw 17/9/12 awk script brings vim to the foreground
 REM gw 25/9/12 uses findstr instead of grep, and direct call instead of via awk, and optional vim path added
+REM gw 27/9/12 expand to full path so can call from command line for a file in the local directory
+REM            also fixed typo recently introduced where vsplits were just acting as splits
 
 setlocal ENABLEDELAYEDEXPANSION
 
@@ -65,9 +67,9 @@ if %already_ran%==false (
 
 :next_file
 if %1_==_ goto end
-if /i %task% EQU t start %vim_path%gvim.exe --remote-send ":tablast | tabe %~1<CR>:call foreground()<CR>"
-if /i %task% EQU v start %vim_path%gvim.exe --remote-send ":split %~1<CR>:call foreground()<CR>"
-if /i %task% EQU s start %vim_path%gvim.exe --remote-send ":split %~1<CR>:call foreground()<CR>"
+if /i %task% EQU t start %vim_path%gvim.exe --remote-send ":tablast | tabe %~f1<CR>:call foreground()<CR>"
+if /i %task% EQU v start %vim_path%gvim.exe --remote-send ":vsplit %~f1<CR>:call foreground()<CR>"
+if /i %task% EQU s start %vim_path%gvim.exe --remote-send ":split %~f1<CR>:call foreground()<CR>"
 shift
 goto next_file
 
