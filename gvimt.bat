@@ -11,6 +11,7 @@ REM gw 17/9/12 awk script brings vim to the foreground
 REM gw 25/9/12 uses findstr instead of grep, and direct call instead of via awk, and optional vim path added
 REM gw 27/9/12 expand to full path so can call from command line for a file in the local directory
 REM            also fixed typo recently introduced where vsplits were just acting as splits
+REM gw 8/10/12 get into normal mode first, fixes problem where command appears in file text in insert mode
 
 setlocal ENABLEDELAYEDEXPANSION
 
@@ -21,9 +22,14 @@ set vim_path=
 
 set batch_path="c:\batch files"
 set already_ran=false
+set vim_startup_time_ms=1000
 
 if %1_==_ goto usage
 if /i %1 NEQ t if /i %1 NEQ v if /i %1 NEQ s goto usage
+
+REM get the short form of the batch path so don't need to use quoted form
+REM further down
+for %%i in (%batch_path%) do set short_batch_path=%%~si
 
 goto check_already_running
 
@@ -40,7 +46,7 @@ REM We want the first to do the job of making sure gvim
 REM is running, the rest to wait for this
 :check_already_running
 set already_running=false
-if exist %batch_path%\gvimt.tmp (
+if exist %short_batch_path%\gvimt.tmp (
     set already_running=true
     set already_ran=true
     ping -w 100 -n 1 1.2.3.4
@@ -61,18 +67,43 @@ if %already_ran%==false (
     tasklist | findstr gvim.exe > nul
     if not !errorlevel!==0 (
         start %vim_path%gvim.exe %1
+		set already_ran=true
+
+        REM sometimes we miss the first file out possibly if vim hasn't finished starting?
+        REM give it enough time
+        ping -w %vim_startup_time_ms% -n 1 1.2.3.4
         shift
     )
 )
 
 :next_file
+
+REM if %1_==_ goto raise_to_foreground
+
 if %1_==_ goto end
-if /i %task% EQU t start %vim_path%gvim.exe --remote-send ":tablast | tabe %~f1<CR>:call foreground()<CR>"
-if /i %task% EQU v start %vim_path%gvim.exe --remote-send ":vsplit %~f1<CR>:call foreground()<CR>"
-if /i %task% EQU s start %vim_path%gvim.exe --remote-send ":split %~f1<CR>:call foreground()<CR>"
+if /i %task% EQU t start %vim_path%gvim.exe --remote-send "<Esc>:tablast | tabe %~f1<CR>:call foreground()<CR><CR>"
+if /i %task% EQU v start %vim_path%gvim.exe --remote-send "<Esc>:vsplit %~f1<CR>:call foreground()<CR><CR>"
+if /i %task% EQU s start %vim_path%gvim.exe --remote-send "<Esc>:split %~f1<CR>:call foreground()<CR><CR>"
 shift
 goto next_file
 
+REM This routine sort of works but its very complicated and it throws errors sometimes
+REM Also it still doesn't always raise the VIM to the front
+REM
+REM :raise_to_foreground
+REM REM have to go through all this to find out what the remote server is called, then
+REM REM call remote_foreground.  It still sometimes doesn't work (if called from Windows
+REM REM Explorer) but at least the taskbar flashes now.
+REM if %already_ran%==false (
+REM 	%vim_path%gvim.exe --remote-send ":let gvimt_server = [v:servername]<CR>:call writefile(gvimt_server,'%short_batch_path%\gvimt_server.tmp')<CR><CR>"
+REM 	set /p gvimt_server=< %short_batch_path%\gvimt_server.tmp
+REM 	set gvimt_server='!gvimt_server!'
+REM ) else (
+REM 	set gvimt_server='GVIM'
+REM )
+REM start %vim_path%gvim.exe -c "call remote_foreground(%gvimt_server%)" -c "q"
+REM del %short_batch_path%\gvimt_server.tmp
+
 :end
-if exist %batch_path%\gvimt.tmp del %batch_path%\gvimt.tmp
+if exist %short_batch_path%\gvimt.tmp del %short_batch_path%\gvimt.tmp
 endlocal
