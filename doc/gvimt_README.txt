@@ -3,6 +3,7 @@ Written by Geoff Wood (geoffrey.wood at_symbol thomsonreuters.com)
 gw 13/9/12 - Created
 gw 25/9/12 - Updated to raise Vim to foreground, removes awk and grep dependency, adds path option to specify vim location
 gw 9/10/12 - Goes to normal mode first to make sure commands execute and don't just go into the file. Waits a bit when starting vim.  Clears the command from the command line afterwards.
+gw 9/5/13 adds tv and ts modes to open groups on new tab
 
 gvimt.bat is a script for Windows to open new files in gvim in new tabs, splits or vertical splits.  It starts gvim if it is not running already.
 
@@ -31,8 +32,10 @@ Optionally, create shortcuts in your SendTo directory with these targets:
 "c:\batch files\gvimt.bat" t 
 "c:\batch files\gvimt.bat" v
 "c:\batch files\gvimt.bat" s
+"c:\batch files\gvimt.bat" tv
+"c:\batch files\gvimt.bat" ts
 
-Name these three shortcuts something like "Edit with Vim Tab", "Edit with Vim VSplit" and "Edit with Vim Split"
+Name these three shortcuts something like "Edit with Vim Tab", "Edit with Vim VSplit", "Edit with Vim Split", "Edit with Vim VSplit Tab", and "Edit with Vim Split Tab"
 
 Your SendTo menu directory location depends on which version of Windows you are using.  Under XP it is probably c:\documents and settings\username\SendTo.
 

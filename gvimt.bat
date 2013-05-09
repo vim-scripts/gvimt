@@ -12,6 +12,7 @@ REM gw 25/9/12 uses findstr instead of grep, and direct call instead of via awk,
 REM gw 27/9/12 expand to full path so can call from command line for a file in the local directory
 REM            also fixed typo recently introduced where vsplits were just acting as splits
 REM gw 8/10/12 get into normal mode first, fixes problem where command appears in file text in insert mode
+REM gw 9/5/13 adds tv and ts modes to open groups on new tab
 
 setlocal ENABLEDELAYEDEXPANSION
 
@@ -25,19 +26,23 @@ set already_ran=false
 set vim_startup_time_ms=1000
 
 if %1_==_ goto usage
-if /i %1 NEQ t if /i %1 NEQ v if /i %1 NEQ s goto usage
+if /i %1 NEQ t if /i %1 NEQ v if /i %1 NEQ s if /i %1 NEQ tv if /i %1 NEQ ts goto usage
 
 REM get the short form of the batch path so don't need to use quoted form
 REM further down
 for %%i in (%batch_path%) do set short_batch_path=%%~si
 
+set task=%1
+
 goto check_already_running
 
 :usage
-@echo usage: gvimt [t^|v^|s] file [file2 ...]
+@echo usage: gvimt [t^|v^|s^|tv^|ts] file [file2 ...]
 @echo t - open each file in new tab
 @echo v - open each file in new vertical split
 @echo s - echo each file in new split
+@echo tv - open new tab with files vertically split
+@echo ts - open new tab with files split
 goto end
 
 REM If run from right-click menu on multiple files
@@ -47,6 +52,8 @@ REM is running, the rest to wait for this
 :check_already_running
 set already_running=false
 if exist %short_batch_path%\gvimt.tmp (
+    if /i %task% EQU tv set task=v
+    if /i %task% EQU ts set task=s
     set already_running=true
     set already_ran=true
     ping -w 100 -n 1 1.2.3.4
@@ -57,7 +64,6 @@ REM While we have this file other instances will wait
 REM for us to complete
 echo %2 > %batch_path%\gvimt.tmp
 
-set task=%1
 shift
 
 REM If another instance ran, it made sure
@@ -81,10 +87,12 @@ if %already_ran%==false (
 REM if %1_==_ goto raise_to_foreground
 
 if %1_==_ goto end
-if /i %task% EQU t start %vim_path%gvim.exe --remote-send "<Esc>:tablast | tabe %~f1<CR>:call foreground()<CR><CR>"
+if /i %task% GEQ t if /i %task% LSS u start %vim_path%gvim.exe --remote-send "<Esc>:tablast | tabe %~f1<CR>:call foreground()<CR><CR>"
 if /i %task% EQU v start %vim_path%gvim.exe --remote-send "<Esc>:vsplit %~f1<CR>:call foreground()<CR><CR>"
 if /i %task% EQU s start %vim_path%gvim.exe --remote-send "<Esc>:split %~f1<CR>:call foreground()<CR><CR>"
 shift
+if /i %task% EQU tv set task=v
+if /i %task% EQU ts set task=s
 goto next_file
 
 REM This routine sort of works but its very complicated and it throws errors sometimes
