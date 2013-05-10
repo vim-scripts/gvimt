@@ -4,6 +4,8 @@ gw 13/9/12 - Created
 gw 25/9/12 - Updated to raise Vim to foreground, removes awk and grep dependency, adds path option to specify vim location
 gw 9/10/12 - Goes to normal mode first to make sure commands execute and don't just go into the file. Waits a bit when starting vim.  Clears the command from the command line afterwards.
 gw 9/5/13 adds tv and ts modes to open groups on new tab
+gw 10/5/13 added tabsplit_wait_s to fix problem where opening many files would end up on more than one tab
+
 
 gvimt.bat is a script for Windows to open new files in gvim in new tabs, splits or vertical splits.  It starts gvim if it is not running already.
 
@@ -19,7 +21,9 @@ Create directory C:\Batch Files\ and extract the package there. (If you want ano
 
 If you do not have the tasklist command (e.g. using Windows 2000), edit the batch file and change "set already_ran" to "=true" at the start of gvimt.bat.
 
-If your gvim typically takes longer than a second to start up, change "set vim_startup_time_ms" to be more milliseconds. 
+If your gvim typically takes longer than a second to start up, change "set vim_startup_time_ms" to be more milliseconds.
+
+If you find tv and ts commands open files on more than one tab, change "set tabsplit_wait_s" to be more seconds.
 
 If gvim.exe is not in your path, edit gvimt.bat and change "set vim_path=" at the start.  Paths should end with \ and be quoted, e.g. 
 

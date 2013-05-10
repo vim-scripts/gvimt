@@ -13,6 +13,7 @@ REM gw 27/9/12 expand to full path so can call from command line for a file in t
 REM            also fixed typo recently introduced where vsplits were just acting as splits
 REM gw 8/10/12 get into normal mode first, fixes problem where command appears in file text in insert mode
 REM gw 9/5/13 adds tv and ts modes to open groups on new tab
+REM gw 10/5/13 added tabsplit_wait_s to fix problem where opening many files would end up on more than one tab
 
 setlocal ENABLEDELAYEDEXPANSION
 
@@ -24,6 +25,7 @@ set vim_path=
 set batch_path="c:\batch files"
 set already_ran=false
 set vim_startup_time_ms=1000
+set tabsplit_wait_s=3
 
 if %1_==_ goto usage
 if /i %1 NEQ t if /i %1 NEQ v if /i %1 NEQ s if /i %1 NEQ tv if /i %1 NEQ ts goto usage
@@ -52,8 +54,6 @@ REM is running, the rest to wait for this
 :check_already_running
 set already_running=false
 if exist %short_batch_path%\gvimt.tmp (
-    if /i %task% EQU tv set task=v
-    if /i %task% EQU ts set task=s
     set already_running=true
     set already_ran=true
     ping -w 100 -n 1 1.2.3.4
@@ -72,7 +72,7 @@ REM Otherwise do it now
 if %already_ran%==false (
     tasklist | findstr gvim.exe > nul
     if not !errorlevel!==0 (
-        start %vim_path%gvim.exe %1
+        start %vim_path%gvim.exe -c "let g:gvimt_time_this=localtime()" %1
 		set already_ran=true
 
         REM sometimes we miss the first file out possibly if vim hasn't finished starting?
@@ -87,12 +87,16 @@ if %already_ran%==false (
 REM if %1_==_ goto raise_to_foreground
 
 if %1_==_ goto end
-if /i %task% GEQ t if /i %task% LSS u start %vim_path%gvim.exe --remote-send "<Esc>:tablast | tabe %~f1<CR>:call foreground()<CR><CR>"
+if /i %task% EQU t start %vim_path%gvim.exe --remote-send "<Esc>:tablast | tabe %~f1<CR>:call foreground()<CR><CR>"
 if /i %task% EQU v start %vim_path%gvim.exe --remote-send "<Esc>:vsplit %~f1<CR>:call foreground()<CR><CR>"
 if /i %task% EQU s start %vim_path%gvim.exe --remote-send "<Esc>:split %~f1<CR>:call foreground()<CR><CR>"
+
+if /i %task% EQU tv start %vim_path% gvim.exe --remote-send "<Esc>:if exists("""g:gvimt_time_this""") | let g:gvimt_time_last=g:gvimt_time_this | else | let g:gvimt_time_last=0 | endif | let g:gvimt_time_this=localtime() | if g:gvimt_time_this > g:gvimt_time_last + %tabsplit_wait_s% | tablast | tabe %~f1 | else | vsplit %~f1 | endif | call foreground()<CR><CR>"
+
+if /i %task% EQU ts start %vim_path% gvim.exe --remote-send "<Esc>:if exists("""g:gvimt_time_this""") | let g:gvimt_time_last=g:gvimt_time_this | else | let g:gvimt_time_last=0 | endif | let g:gvimt_time_this=localtime() | if g:gvimt_time_this > g:gvimt_time_last + %tabsplit_wait_s% | tablast | tabe %~f1 | else | split %~f1 | endif | call foreground()<CR><CR>"
+
 shift
-if /i %task% EQU tv set task=v
-if /i %task% EQU ts set task=s
+
 goto next_file
 
 REM This routine sort of works but its very complicated and it throws errors sometimes
