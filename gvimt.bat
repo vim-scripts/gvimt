@@ -14,6 +14,7 @@ REM            also fixed typo recently introduced where vsplits were just actin
 REM gw 8/10/12 get into normal mode first, fixes problem where command appears in file text in insert mode
 REM gw 9/5/13 adds tv and ts modes to open groups on new tab
 REM gw 10/5/13 added tabsplit_wait_s to fix problem where opening many files would end up on more than one tab
+REM gw 17/6/13 only look at tasks for this user session when checking if vim is already running
 
 setlocal ENABLEDELAYEDEXPANSION
 
@@ -70,7 +71,7 @@ REM If another instance ran, it made sure
 REM gvim was running
 REM Otherwise do it now
 if %already_ran%==false (
-    tasklist | findstr gvim.exe > nul
+    tasklist | findstr %SESSIONNAME% | findstr gvim.exe > nul
     if not !errorlevel!==0 (
         start %vim_path%gvim.exe -c "let g:gvimt_time_this=localtime()" %1
 		set already_ran=true

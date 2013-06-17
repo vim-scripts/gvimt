@@ -5,7 +5,7 @@ gw 25/9/12 - Updated to raise Vim to foreground, removes awk and grep dependency
 gw 9/10/12 - Goes to normal mode first to make sure commands execute and don't just go into the file. Waits a bit when starting vim.  Clears the command from the command line afterwards.
 gw 9/5/13 adds tv and ts modes to open groups on new tab
 gw 10/5/13 added tabsplit_wait_s to fix problem where opening many files would end up on more than one tab
-
+gw 17/6/13 only look at tasks for this user session when checking if vim is already running
 
 gvimt.bat is a script for Windows to open new files in gvim in new tabs, splits or vertical splits.  It starts gvim if it is not running already.
 
