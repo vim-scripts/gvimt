@@ -15,12 +15,18 @@ REM gw 8/10/12 get into normal mode first, fixes problem where command appears i
 REM gw 9/5/13 adds tv and ts modes to open groups on new tab
 REM gw 10/5/13 added tabsplit_wait_s to fix problem where opening many files would end up on more than one tab
 REM gw 17/6/13 only look at tasks for this user session when checking if vim is already running
+REM gw 2/12/13 Prefer to use cmd-line vim to list remote servers
+REM            If it does have to use tasklist, handle case where sessionname is not populated
+REM              (crudely, by quoting the parameter so findstr doesn't just bomb out.  Will still fail if
+REM              there are two sessions and this is the wrong one.  But the error will be more noticable.)
 
 setlocal ENABLEDELAYEDEXPANSION
 
 REM If gvim.exe is not in your path you can add the path here,
 REM make sure it ends in a \ character and is quoted if necessary
-REM e.g. set vim_path="c:\program files\vim\vim73\"
+REM Set the path to command-line vim as well
+REM e.g. set gvim_path="c:\program files\vim\vim73\"
+set gvim_path=
 set vim_path=
 
 set batch_path="c:\batch files"
@@ -71,9 +77,17 @@ REM If another instance ran, it made sure
 REM gvim was running
 REM Otherwise do it now
 if %already_ran%==false (
-    tasklist | findstr %SESSIONNAME% | findstr gvim.exe > nul
+
+    REM tasklist sometimes fails in odd circumstances, sessionname is not populated
+    REM So prefer to use vim to check instead.  This only shows vims local to this session
+    %vim_path%vim --version > nul
+    if !errorlevel!==0 (
+        %vim_path%vim --serverlist | findstr GVIM
+    ) else (
+        tasklist | findstr "%SESSIONNAME%.*" | findstr gvim.exe > nul
+    )
     if not !errorlevel!==0 (
-        start %vim_path%gvim.exe -c "let g:gvimt_time_this=localtime()" %1
+        start %gvim_path%gvim.exe -c "let g:gvimt_time_this=localtime()" %1
 		set already_ran=true
 
         REM sometimes we miss the first file out possibly if vim hasn't finished starting?
@@ -88,13 +102,13 @@ if %already_ran%==false (
 REM if %1_==_ goto raise_to_foreground
 
 if %1_==_ goto end
-if /i %task% EQU t start %vim_path%gvim.exe --remote-send "<Esc>:tablast | tabe %~f1<CR>:call foreground()<CR><CR>"
-if /i %task% EQU v start %vim_path%gvim.exe --remote-send "<Esc>:vsplit %~f1<CR>:call foreground()<CR><CR>"
-if /i %task% EQU s start %vim_path%gvim.exe --remote-send "<Esc>:split %~f1<CR>:call foreground()<CR><CR>"
+if /i %task% EQU t start %gvim_path%gvim.exe --remote-send "<Esc>:tablast | tabe %~f1<CR>:call foreground()<CR><CR>"
+if /i %task% EQU v start %gvim_path%gvim.exe --remote-send "<Esc>:vsplit %~f1<CR>:call foreground()<CR><CR>"
+if /i %task% EQU s start %gvim_path%gvim.exe --remote-send "<Esc>:split %~f1<CR>:call foreground()<CR><CR>"
 
-if /i %task% EQU tv start %vim_path% gvim.exe --remote-send "<Esc>:if exists("""g:gvimt_time_this""") | let g:gvimt_time_last=g:gvimt_time_this | else | let g:gvimt_time_last=0 | endif | let g:gvimt_time_this=localtime() | if g:gvimt_time_this > g:gvimt_time_last + %tabsplit_wait_s% | tablast | tabe %~f1 | else | vsplit %~f1 | endif | call foreground()<CR><CR>"
+if /i %task% EQU tv start %gvim_path% gvim.exe --remote-send "<Esc>:if exists("""g:gvimt_time_this""") | let g:gvimt_time_last=g:gvimt_time_this | else | let g:gvimt_time_last=0 | endif | let g:gvimt_time_this=localtime() | if g:gvimt_time_this > g:gvimt_time_last + %tabsplit_wait_s% | tablast | tabe %~f1 | else | vsplit %~f1 | endif | call foreground()<CR><CR>"
 
-if /i %task% EQU ts start %vim_path% gvim.exe --remote-send "<Esc>:if exists("""g:gvimt_time_this""") | let g:gvimt_time_last=g:gvimt_time_this | else | let g:gvimt_time_last=0 | endif | let g:gvimt_time_this=localtime() | if g:gvimt_time_this > g:gvimt_time_last + %tabsplit_wait_s% | tablast | tabe %~f1 | else | split %~f1 | endif | call foreground()<CR><CR>"
+if /i %task% EQU ts start %gvim_path% gvim.exe --remote-send "<Esc>:if exists("""g:gvimt_time_this""") | let g:gvimt_time_last=g:gvimt_time_this | else | let g:gvimt_time_last=0 | endif | let g:gvimt_time_this=localtime() | if g:gvimt_time_this > g:gvimt_time_last + %tabsplit_wait_s% | tablast | tabe %~f1 | else | split %~f1 | endif | call foreground()<CR><CR>"
 
 shift
 
@@ -108,13 +122,13 @@ REM REM have to go through all this to find out what the remote server is called
 REM REM call remote_foreground.  It still sometimes doesn't work (if called from Windows
 REM REM Explorer) but at least the taskbar flashes now.
 REM if %already_ran%==false (
-REM 	%vim_path%gvim.exe --remote-send ":let gvimt_server = [v:servername]<CR>:call writefile(gvimt_server,'%short_batch_path%\gvimt_server.tmp')<CR><CR>"
+REM 	%gvim_path%gvim.exe --remote-send ":let gvimt_server = [v:servername]<CR>:call writefile(gvimt_server,'%short_batch_path%\gvimt_server.tmp')<CR><CR>"
 REM 	set /p gvimt_server=< %short_batch_path%\gvimt_server.tmp
 REM 	set gvimt_server='!gvimt_server!'
 REM ) else (
 REM 	set gvimt_server='GVIM'
 REM )
-REM start %vim_path%gvim.exe -c "call remote_foreground(%gvimt_server%)" -c "q"
+REM start %gvim_path%gvim.exe -c "call remote_foreground(%gvimt_server%)" -c "q"
 REM del %short_batch_path%\gvimt_server.tmp
 
 :end

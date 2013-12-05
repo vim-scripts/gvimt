@@ -4,7 +4,9 @@ gvimt.bat is a script for Windows to open new files in gvim in new tabs, splits 
 
 Call it from SendTo menu, from Context menu entries or from the command line.
 
-It uses the tasklist command (which exists from Windows XP, but not in Windows 2000) when checking if gvim is already running.  On Windows 2000 you'll need to have an instance of gvim running already.
+It ignores command line vim, and gvims where the --servername parameter has changed the name to not include "GVIM" 
+
+It prefers to use vim.exe (command line vim, not gvim) to check if gvim is already running.  If that's not available it will use the tasklist command (which exists from Windows XP, but not in Windows 2000).  On Windows 2000 you'll need to have an instance of gvim running already.  Tasklist is not always reliable when using several remote desktop sessions on a machine (because for some reason %SESSIONNAME% parameter is not always populated in the batch file's environment).
 
 It creates gvimt.tmp while it is running, if it crashes or goes wrong for some reason, delete this file.
 
