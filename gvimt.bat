@@ -19,6 +19,7 @@ REM gw 2/12/13 Prefer to use cmd-line vim to list remote servers
 REM            If it does have to use tasklist, handle case where sessionname is not populated
 REM              (crudely, by quoting the parameter so findstr doesn't just bomb out.  Will still fail if
 REM              there are two sessions and this is the wrong one.  But the error will be more noticable.)
+REM gw 11/3/14 Stop using short paths to be Windows 7 compatible
 
 setlocal ENABLEDELAYEDEXPANSION
 
@@ -29,17 +30,13 @@ REM e.g. set gvim_path="c:\program files\vim\vim73\"
 set gvim_path=
 set vim_path=
 
-set batch_path="c:\batch files"
+set batch_path="c:\batch files\"
 set already_ran=false
 set vim_startup_time_ms=1000
 set tabsplit_wait_s=3
 
 if %1_==_ goto usage
 if /i %1 NEQ t if /i %1 NEQ v if /i %1 NEQ s if /i %1 NEQ tv if /i %1 NEQ ts goto usage
-
-REM get the short form of the batch path so don't need to use quoted form
-REM further down
-for %%i in (%batch_path%) do set short_batch_path=%%~si
 
 set task=%1
 
@@ -60,7 +57,7 @@ REM We want the first to do the job of making sure gvim
 REM is running, the rest to wait for this
 :check_already_running
 set already_running=false
-if exist %short_batch_path%\gvimt.tmp (
+if exist %batch_path%\gvimt.tmp (
     set already_running=true
     set already_ran=true
     ping -w 100 -n 1 1.2.3.4
@@ -132,5 +129,5 @@ REM start %gvim_path%gvim.exe -c "call remote_foreground(%gvimt_server%)" -c "q"
 REM del %short_batch_path%\gvimt_server.tmp
 
 :end
-if exist %short_batch_path%\gvimt.tmp del %short_batch_path%\gvimt.tmp
+if exist %batch_path%\gvimt.tmp del %batch_path%\gvimt.tmp
 endlocal

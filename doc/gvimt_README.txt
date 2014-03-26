@@ -7,6 +7,7 @@ gw 9/5/13 adds tv and ts modes to open groups on new tab
 gw 10/5/13 added tabsplit_wait_s to fix problem where opening many files would end up on more than one tab
 gw 17/6/13 only look at tasks for this user session when checking if vim is already running
 gw 2/12/13 Prefer to use cmd-line vim to list remote servers. If it does have to use tasklist, handle case where sessionname is not populated
+gw 11/3/14 Stop using short paths to be Windows 7 compatible
 
 gvimt.bat is a script for Windows to open new files in gvim in new tabs, splits or vertical splits.  It starts gvim if it is not running already.
 
